@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #faf6f1;
+    --card: #fffcf9;
+    --rose:      #cc7480;
+    --rose-light:#fbe8ea;
+    --rose-dark: #a85560;
+    --rose-muted:#e8b4b8;
+    --text:      #2d1f22;
+    --text-sec:  #8a6b6e;
+    --text-muted:#b89799;
+    --border:    #edddd9;
+    --shadow: 0 12px 50px rgba(180,100,110,0.11);
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 52px 20px 60px;
+    color: var(--text);
+  }
+
+  /* soft radial glow in corner */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -120px; right: -120px;
+    width: 540px; height: 540px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(204,116,128,.09) 0%, transparent 68%);
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; left: -100px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(204,116,128,.06) 0%, transparent 68%);
+    pointer-events: none;
+  }
+
+  .container { width: 100%; max-width: 800px; animation: fadeUp .55s ease both; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Header ── */
+  .app-header { text-align: center; margin-bottom: 40px; }
+  .app-header .eyebrow {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: .95rem;
+    color: var(--rose);
+    letter-spacing: .4px;
+    margin-bottom: 8px;
+  }
+  .app-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: -1px;
+    line-height: 1.05;
+  }
+  .app-header .sub {
+    margin-top: 10px;
+    font-size: .82rem;
+    color: var(--text-muted);
+    letter-spacing: .6px;
+    font-weight: 400;
+  }
+  .app-header .sub span {
+    display: inline-block;
+    background: var(--rose-light);
+    color: var(--rose-dark);
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin: 3px 3px;
+    font-weight: 500;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border-radius: 26px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  /* ── Month nav ── */
+  .month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 36px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-btn {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-sec);
+    font-size: 1.25rem;
+    transition: all .2s;
+    line-height: 1;
+  }
+  .nav-btn:hover { background: var(--rose-light); border-color: var(--rose-muted); color: var(--rose-dark); }
+  .month-info { text-align: center; }
+  .month-info .month-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--text);
+  }
+  .month-info .year-tag {
+    display: block;
+    font-size: .72rem;
+    color: var(--text-muted);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  /* ── Stats ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+  .stat {
+    text-align: center;
+    padding: 16px 8px;
+    border-right: 1px solid var(--border);
+    transition: background .2s;
+  }
+  .stat:last-child { border-right: none; }
+  .stat-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--rose-dark);
+    line-height: 1;
+  }
+  .stat-lbl {
+    font-size: .68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-top: 5px;
+  }
+
+  /* progress bar */
+  .progress-wrap {
+    padding: 12px 36px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--rose-light);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--rose-muted), var(--rose));
+    border-radius: 99px;
+    transition: width .5s ease;
+  }
+  .progress-label { font-size: .78rem; color: var(--text-muted); white-space: nowrap; min-width: 60px; text-align: right; }
+
+  /* ── Calendar ── */
+  .cal-body { padding: 24px 28px 10px; }
+  .day-headers {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 6px;
+  }
+  .dh {
+    text-align: center;
+    font-size: .68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    padding: 6px 0;
+  }
+  .dh.wknd { color: var(--border); }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+  }
+  .dc {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    font-size: .875rem;
+    font-weight: 400;
+    color: var(--text);
+    position: relative;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .dc.wknd { color: var(--text-muted); }
+  .dc.empty { }
+
+  .dc.work {
+    background: var(--rose);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(204,116,128,.38);
+    cursor: default;
+  }
+  .dc.work:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(204,116,128,.45); }
+  .dc.done {
+    background: var(--rose-light);
+    color: var(--rose-dark);
+    font-weight: 500;
+  }
+  .dc.today-marker {
+    outline: 2.5px solid var(--text);
+    outline-offset: 2px;
+  }
+  .dc.today-work {
+    background: var(--rose-dark);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 4px 18px rgba(168,85,96,.48);
+    outline: 2.5px solid var(--text);
+    outline-offset: 2px;
+  }
+  .dc.today-off {
+    background: var(--text);
+    color: var(--bg);
+    font-weight: 600;
+  }
+
+  /* CHANGE 1: clickable past weekdays show a pointer and a subtle ring on hover */
+  .dc.editable {
+    cursor: pointer;
+  }
+  .dc.editable:hover {
+    outline: 2px dashed var(--rose-muted);
+    outline-offset: 2px;
+    transform: scale(1.06);
+  }
+  .dc.done.editable:hover {
+    outline: 2px dashed var(--rose-dark);
+  }
+
+  /* ── Upcoming list ── */
+  .upcoming-section {
+    padding: 20px 36px 28px;
+    border-top: 1px solid var(--border);
+  }
+  .upcoming-title {
+    font-family: 'Playfair Display', serif;
+    font-size: .9rem;
+    font-style: italic;
+    color: var(--text-sec);
+    margin-bottom: 14px;
+    letter-spacing: .2px;
+  }
+  .upcoming-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pill {
+    background: var(--rose-light);
+    color: var(--rose-dark);
+    border: 1px solid var(--rose-muted);
+    border-radius: 99px;
+    padding: 5px 14px;
+    font-size: .8rem;
+    font-weight: 500;
+    transition: all .15s;
+  }
+  .pill.past { background: #f5f0ee; color: var(--text-muted); border-color: var(--border); text-decoration: line-through; }
+  .pill.today-pill { background: var(--rose); color: #fff; border-color: var(--rose-dark); font-weight: 600; }
+  .pill.no-upcoming { background: transparent; color: var(--text-muted); border-color: transparent; font-style: italic; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 22px;
+    justify-content: center;
+    padding: 0 28px 26px;
+  }
+  .li { display: flex; align-items: center; gap: 7px; font-size: .78rem; color: var(--text-sec); }
+  .ld { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; }
+  .ld.work { background: var(--rose); }
+  .ld.done { background: var(--rose-light); border: 1px solid var(--rose-muted); }
+  .ld.today { background: var(--text); }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 26px;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: .875rem;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="app-header">
+    <div class="eyebrow">your monthly planner</div>
+    <h1>Work Schedule</h1>
+    <div class="sub">
+      <span>60 hrs / month</span>
+      <span>6 hrs / shift</span>
+      <span>10 shifts</span>
+      <span>weekdays only</span>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="month-nav">
+      <button class="nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+      <div class="month-info">
+        <div class="month-name" id="monthName"></div>
+        <span class="year-tag" id="yearTag"></span>
+      </div>
+      <button class="nav-btn" onclick="changeMonth(1)">&#8250;</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="sShifts">10</div><div class="stat-lbl">Shifts</div></div>
+      <div class="stat"><div class="stat-val" id="sHours">60</div><div class="stat-lbl">Hours</div></div>
+      <div class="stat"><div class="stat-val" id="sDone">0</div><div class="stat-lbl">Completed</div></div>
+      <div class="stat"><div class="stat-val" id="sLeft">60</div><div class="stat-lbl">Hrs Left</div></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-label" id="progressLabel">0 / 60 hrs</div>
+    </div>
+
+    <div class="cal-body">
+      <div class="day-headers">
+        <div class="dh wknd">Sun</div>
+        <div class="dh">Mon</div>
+        <div class="dh">Tue</div>
+        <div class="dh">Wed</div>
+        <div class="dh">Thu</div>
+        <div class="dh">Fri</div>
+        <div class="dh wknd">Sat</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <div class="legend">
+      <div class="li"><div class="ld work"></div><span>Work day</span></div>
+      <div class="li"><div class="ld done"></div><span>Completed</span></div>
+      <div class="li"><div class="ld today"></div><span>Today</span></div>
+    </div>
+
+    <div class="upcoming-section">
+      <div class="upcoming-title">upcoming work days this month</div>
+      <div class="upcoming-pills" id="upcomingPills"></div>
+    </div>
+
+  </div>
+
+  <div class="footer">6 hrs &nbsp;·&nbsp; no back-to-back days &nbsp;·&nbsp; weekdays only &nbsp;♡</div>
+</div>
+
+<script>
+  const HOURS_PER_SHIFT = 6;
+  const SHIFTS = 10;
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const SHORT_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  let displayYear = 2026;
+  let displayMonth = 4; // 0-indexed; 4 = May
+
+  // ── Schedule generation ──────────────────────────────────────────────
+  function getWeekdays(year, month) {
+    const dim = new Date(year, month + 1, 0).getDate();
+    const days = [];
+    for (let d = 1; d <= dim; d++) {
+      const dow = new Date(year, month, d).getDay();
+      if (dow >= 1 && dow <= 5) days.push(d);
+    }
+    return days;
+  }
+
+  function generateSchedule(year, month) {
+    const key = `ws_${year}_${month}`;
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored) return JSON.parse(stored);
+    } catch(e) {}
+
+    const weekdays = getWeekdays(year, month);
+    const target = SHIFTS;
+    const selected = [];
+    const segSize = weekdays.length / target;
+
+    for (let i = 0; i < target; i++) {
+      const segStart = Math.floor(i * segSize);
+      const segEnd = Math.min(Math.floor((i + 1) * segSize), weekdays.length - 1);
+      let placed = false;
+
+      for (let j = segStart; j <= segEnd && !placed; j++) {
+        const d = weekdays[j];
+        const last = selected.length ? selected[selected.length - 1] : -99;
+        if (d - last > 1) { selected.push(d); placed = true; }
+      }
+      if (!placed) {
+        for (let j = segEnd + 1; j < weekdays.length && !placed; j++) {
+          const d = weekdays[j];
+          const last = selected.length ? selected[selected.length - 1] : -99;
+          if (d - last > 1) { selected.push(d); placed = true; }
+        }
+      }
+    }
+
+    try { localStorage.setItem(key, JSON.stringify(selected)); } catch(e) {}
+    return selected;
+  }
+
+  // CHANGE 2: toggle a day in or out of the saved schedule and re-render
+  function toggleDay(year, month, day) {
+    const key = `ws_${year}_${month}`;
+    const schedule = generateSchedule(year, month);
+    const idx = schedule.indexOf(day);
+    if (idx === -1) {
+      schedule.push(day);
+      schedule.sort((a, b) => a - b);
+    } else {
+      schedule.splice(idx, 1);
+    }
+    try { localStorage.setItem(key, JSON.stringify(schedule)); } catch(e) {}
+    render();
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────
+  function render() {
+    const year = displayYear, month = displayMonth;
+    const schedule = generateSchedule(year, month);
+    const workSet = new Set(schedule);
+    const dim = new Date(year, month + 1, 0).getDate();
+
+    const now = new Date();
+    const isCurMonth = now.getFullYear() === year && now.getMonth() === month;
+    const isPastMonth = year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth());
+    const todayD = now.getDate();
+
+    // Header
+    document.getElementById('monthName').textContent = MONTHS[month];
+    document.getElementById('yearTag').textContent = year;
+
+    // Stats
+    let completed = 0;
+    if (isCurMonth) completed = schedule.filter(d => d < todayD).length;
+    else if (isPastMonth) completed = schedule.length;
+
+    const remaining = (schedule.length - completed) * HOURS_PER_SHIFT;
+    const doneHrs = completed * HOURS_PER_SHIFT;
+    const pct = Math.round((doneHrs / 60) * 100);
+
+    document.getElementById('sShifts').textContent = schedule.length;
+    document.getElementById('sHours').textContent  = 60;
+    document.getElementById('sDone').textContent   = completed;
+    document.getElementById('sLeft').textContent   = remaining;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = doneHrs + ' / 60 hrs';
+
+    // Calendar grid
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    const firstDow = new Date(year, month, 1).getDay();
+    for (let i = 0; i < firstDow; i++) {
+      const e = document.createElement('div');
+      e.className = 'dc empty'; grid.appendChild(e);
+    }
+    for (let d = 1; d <= dim; d++) {
+      const cell = document.createElement('div');
+      const dow = new Date(year, month, d).getDay();
+      const isWknd = dow === 0 || dow === 6;
+      const isWork = workSet.has(d);
+      const isToday = isCurMonth && d === todayD;
+      const isPast = isCurMonth ? d < todayD : isPastMonth;
+
+      let cls = 'dc';
+      if (isWknd) cls += ' wknd';
+      if (isToday && isWork)  cls += ' today-work';
+      else if (isToday)       cls += ' today-off';
+      else if (isWork && isPast) cls += ' done';
+      else if (isWork)        cls += ' work';
+
+      // CHANGE 3: any past weekday (or today) is editable — add the class and click handler
+      if (!isWknd && (isPast || isToday)) {
+        cls += ' editable';
+        cell.addEventListener('click', () => toggleDay(year, month, d));
+      }
+
+      cell.className = cls;
+      cell.textContent = d;
+      grid.appendChild(cell);
+    }
+
+    // Upcoming pills
+    const pills = document.getElementById('upcomingPills');
+    pills.innerHTML = '';
+    const upcoming = schedule.filter(d => {
+      if (isCurMonth) return d >= todayD;
+      if (isPastMonth) return false;
+      return true;
+    });
+
+    if (upcoming.length === 0 && (isCurMonth || isPastMonth)) {
+      const p = document.createElement('div');
+      p.className = 'pill no-upcoming';
+      p.textContent = isPastMonth ? 'All shifts completed ✓' : 'No more shifts this month ✓';
+      pills.appendChild(p);
+    } else {
+      const listed = isPastMonth ? schedule : upcoming.slice(0, 8);
+      listed.forEach(d => {
+        const p = document.createElement('div');
+        const dow = new Date(year, month, d).getDay();
+        const isToday = isCurMonth && d === todayD;
+        const isp = isPastMonth || (isCurMonth && d < todayD);
+        p.className = 'pill' + (isToday ? ' today-pill' : isp ? ' past' : '');
+        p.textContent = SHORT_DAYS[dow] + ', ' + MONTHS[month].slice(0,3) + ' ' + d;
+        pills.appendChild(p);
+      });
+    }
+  }
+
+  function changeMonth(dir) {
+    displayMonth += dir;
+    if (displayMonth > 11) { displayMonth = 0; displayYear++; }
+    if (displayMonth < 0)  { displayMonth = 11; displayYear--; }
+    render();
+  }
+
+  render();
+</script>
+</body>
+</html>
